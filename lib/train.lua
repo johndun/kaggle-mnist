@@ -119,7 +119,7 @@ function train(model, criterion, config, train_x, train_y, test_x, test_y)
   local parameters = model:getParameters()
   print('Number of model parameters: ' .. parameters:size(1))
   
-  local best_test_acc = 0
+  local best_test_acc = config.starting_acc or 0
   local best_epoch = 0
   for epoch = 1, config.epochs do
     model:training()
@@ -146,7 +146,7 @@ function train(model, criterion, config, train_x, train_y, test_x, test_y)
   end
   
   if config.eval then
-    return best_epoch
+    return best_epoch, best_test_acc
   else
     torch.save(string.format('model/%s.model', config.id), model)
   end
