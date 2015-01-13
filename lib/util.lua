@@ -3,9 +3,28 @@ require 'image'
 torch.setdefaulttensortype('torch.FloatTensor')
 torch.setnumthreads(4)
 
+FB = false
 TRAIN_FNAME = 'data/train.t7'
 TEST_FNAME = 'data/test.t7'
 CLASSES = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
+INPUT_SZ = {1, 24, 24}
+TEST_JITTER_SZ = 18
+
+function crop_images(train_x)
+  return batch_sample{src       = train_x, 
+                      crp_off_x = 5, 
+                      crp_off_y = 5, 
+                      crp_sz_x  = INPUT_SZ[3],
+                      crp_sz_y  = INPUT_SZ[2]}
+end
+
+function add_conv_layer(model, a, b, c, d, e, f)
+  if FB then
+    model:add(nn.SpatialConvolutionCuFFT(a, b, c, d, e, f))
+    return
+  end
+  model:add(nn.SpatialConvolutionMM(a, b, c, d, e, f))
+end
 
 -- Global contrast normalization
 function preprocess(x, params)
@@ -157,8 +176,8 @@ end
 -- local image_tile = image.toDisplayTensor{input=train_x, padding=4, nrow=10}
 -- image.saveJPG('img/batch-sample.jpg', image_tile)
 
--- local train_x, train_y = unpack(torch.load(TRAIN_FNAME))
--- local x = train_x[1]
+-- local train_x = torch.load(TEST_FNAME)
+-- local x = train_x[317]
 -- local image_tile = torch.Tensor(100, 1, 24, 24)
 -- for i = 1, 100 do
   -- local new_x = random_jitter(x)
@@ -167,6 +186,8 @@ end
 -- image_tile = image.toDisplayTensor{input=image_tile, padding=4, nrow=10}
 -- image.saveJPG('img/random-jitter.jpg', image_tile)
 
+-- local train_x = torch.load(TEST_FNAME)
+-- local x = train_x[276]
 -- local image_tile = test_jitter(x)
 -- image_tile = image.toDisplayTensor{input=image_tile, padding=4, nrow=6}
 -- image.saveJPG('img/test-jitter.jpg', image_tile)
