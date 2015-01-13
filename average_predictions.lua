@@ -33,32 +33,37 @@ function average_predictions(test_x, ids, jitters)
   
   local probs = torch.Tensor(test_x:size(1), #CLASSES):zero()
   for i = 1, #ids do
-    probs:add(get_predictions(test_x, ids[i], jitters[i]))
+    probs:add(get_predictions(test_x, ids[i], jitters[i]):exp())
     collectgarbage('collect')
   end
   return probs
 end
 
+
 -- local train_x, train_y = unpack(torch.load(TRAIN_FNAME))
 -- local test_x, test_y
 -- train_x, train_y, test_x, test_y = validation_split(train_x, train_y, val_sz)
 -- local jitters = {true, true, true}
--- local ids = {'convnet3_val', 'convnet3_1_val', 'convnet3_2_val'}
+-- local ids = {'convnet3', 'convnet3_1', 'convnet3_2'}
+-- local ids = {'dsn1_1_val', 'dsn1_2_val', 'dsn1_3_val'}
 -- local probs = average_predictions(test_x, ids, jitters)
+
 -- local confusion = optim.ConfusionMatrix(CLASSES)
 -- confusion:batchAdd(probs, test_y)
 -- confusion:updateValids()
 -- print(confusion)
 
+
 local test_x = torch.load(TEST_FNAME)
 local jitters = {true, true, true}
-local ids = {'convnet3', 'convnet3_1', 'convnet3_2'}
+-- local ids = {'convnet3', 'convnet3_1', 'convnet3_2'}
+local ids = {'dsn1_1_val', 'dsn1_2_val', 'dsn1_3_val'}
 local probs = average_predictions(test_x, ids, jitters)
 local max_vals, max_indices = probs:max(2)
 max_indices = max_indices:reshape(max_indices:size(1))
 
 print('\n## Writing predictions to file')
-local file = io.open(string.format('result/ensemble1_preds.csv', 
+local file = io.open(string.format('result/ensemble3_preds.csv', 
                                    config.id), 'w')
 file:write('ImageId,Label\n')
 for i = 1, max_indices:size(1) do

@@ -22,6 +22,7 @@ FB = true
 -- end
 
 local function create_model()
+  torch.manualSeed(config.model_seed)
   local model = nn.Sequential() 
   add_conv_layer(model, 1, 128, 5, 5, 1, 1)
   model:add(nn.ReLU())
@@ -61,11 +62,11 @@ local learning_rates = {1.0, 0.1}
 local seeds = {2, 3}
 local epochs = {100, 100}
 local val_sz = 6144
-local model, criterion = create_model(config.model_seed)
+local model, criterion = create_model()
 -- epochs = validate(model, criterion, learning_rates, seeds, epochs, val_sz)
 
 config.id = string.gsub(config.id, '_val$', '')
-model, criterion = create_model(config.model_seed)
+model, criterion = create_model()
 -- model = train(model, criterion, learning_rates, seeds, epochs)
 
 config.id = string.gsub(config.id, '_val$', '')

@@ -7,6 +7,7 @@ require 'fbcunn'
 FB = true
 
 function create_model()
+  torch.manualSeed(config.model_seed)
   local model = nn.Sequential()
 
   layer1 = nn.Sequential()
@@ -122,14 +123,18 @@ end
 
 local cmd = torch.CmdLine()
 cmd:option('-progress', false, 'show progress bars')
+cmd:option('-id', 'dsn1_val', 'model id')
+cmd:option('-s1', 1, 'model seed')
+cmd:option('-s2', 2, 'seed for learning rate 1')
+cmd:option('-s3', 3, 'seed for learning rate 2')
 opt = cmd:parse(arg)
 
 config = {
-  id = 'dsn1_val', 
+  id = opt.id or 'dsn1_val', 
   learningRateDecay = 1.0e-6, 
   momentum = 0.9, 
   batch_size = 128, 
-  model_seed = 1, 
+  model_seed = opt.s1, 
   train_jitter = true, 
   test_jitter = true, 
   early_stop = 12, 
@@ -138,16 +143,16 @@ config = {
 }
 
 local learning_rates = {1.0, 0.1}
-local seeds = {2, 3}
+local seeds = {opt.s2, opt.s3}
 local epochs = {100, 100}
 local val_sz = 6144
-local model, criterion = create_model(config.model_seed)
+local model, criterion = create_model()
 epochs = validate(model, criterion, learning_rates, seeds, epochs, val_sz)
 
 config.id = string.gsub(config.id, '_val$', '')
-model, criterion = create_model(config.model_seed)
+model, criterion = create_model()
 model = train(model, criterion, learning_rates, seeds, epochs)
 
 -- config.id = string.gsub(config.id, '_val$', '')
 -- local model = torch.load(string.format('model/%s.model', config.id))
-gen_predictions(model)
+-- gen_predictions(model)

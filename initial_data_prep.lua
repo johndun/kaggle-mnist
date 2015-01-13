@@ -32,6 +32,25 @@ for i = 1, n_samples do
 end
 torch.save(TEST_FNAME, dat_x)
 
+local train0_fname = 'data/train_32x32.t7'
+local train_fname = 'data/train_yl.t7'
+local test0_fname = 'data/test_32x32.t7'
+local test_fname = 'data/test_yl.t7'
+local function load_data(fname)
+    local f = torch.load(fname,'ascii')
+    local dat = f.data:type(torch.getdefaulttensortype())
+    local labs = f.labels
+    local labels = torch.Tensor(labs:size(1), 10):zero()
+    for i = 1, labs:size(1) do
+      labels[i][labs[i]] = 1.0
+    end
+    return dat, labels
+end
+local train_x,train_y = load_data(train0_fname)
+local test_x,test_y = load_data(test0_fname)
+torch.save(train_fname, {train_x,train_y})
+torch.save(test_fname, {test_x,test_y})
+
 -- require 'image'
 -- local image_tile = dat_x:narrow(1,1,100)
 -- image_tile = image.toDisplayTensor{input=image_tile, padding=4, nrow=10}

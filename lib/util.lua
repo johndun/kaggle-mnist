@@ -4,6 +4,7 @@ torch.setdefaulttensortype('torch.FloatTensor')
 torch.setnumthreads(4)
 
 FB = false
+CCN2 = false
 TRAIN_FNAME = 'data/train.t7'
 TEST_FNAME = 'data/test.t7'
 CLASSES = {'0', '1', '2', '3', '4', '5', '6', '7', '8', '9'}
@@ -22,6 +23,9 @@ function add_conv_layer(model, a, b, c, d, e, f)
   if FB then
     model:add(nn.SpatialConvolutionCuFFT(a, b, c, d, e, f))
     return
+  end
+  if CCN2 then
+  
   end
   model:add(nn.SpatialConvolutionMM(a, b, c, d, e, f))
 end
@@ -175,6 +179,25 @@ end
 -- local preprocess_params = preprocess(train_x)
 -- local image_tile = image.toDisplayTensor{input=train_x, padding=4, nrow=10}
 -- image.saveJPG('img/batch-sample.jpg', image_tile)
+
+
+
+
+local train_x = torch.load(TEST_FNAME)
+train_x = batch_sample{src       = train_x, 
+                       crp_off_x = 5, 
+                       crp_off_y = 5, 
+                       crp_sz_x  = 24,
+                       crp_sz_y  = 24}
+local ids = {84, 539, 641, 845, 1151, 
+             1960, 2252, 2585, 3530, 3734, 
+             3871, 4276, 4342, 4928, 6980}
+local x = torch.Tensor(#ids, INPUT_SZ[1], INPUT_SZ[2], INPUT_SZ[3])
+for i = 1, #ids do
+  x[i] = train_x[ids[i]]
+end
+local image_tile = image.toDisplayTensor{input=x, padding=4, nrow=5}
+image.saveJPG('img/deleteme.jpg', image_tile)
 
 -- local train_x = torch.load(TEST_FNAME)
 -- local x = train_x[317]

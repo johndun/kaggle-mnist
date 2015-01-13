@@ -7,6 +7,7 @@ require 'fbcunn'
 FB = true
 
 local function create_model()
+  torch.manualSeed(config.model_seed)
   local model = nn.Sequential() 
   model:add(nn.SpatialZeroPadding(1, 1, 1, 1))
   add_conv_layer(model, 1, 64, 3, 3, 1, 1)

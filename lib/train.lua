@@ -43,6 +43,9 @@ local function sgd(model, criterion, config, train_x, train_y)
         for j = 1, #criterion do
           f[j] = criterion[j]:forward(output[j], targets)
           df_do[j] = criterion[j]:backward(output[j], targets)
+          if j > 1 then
+            df_do[j]:mul(1 / #criterion)
+          end
         end
         confusion:batchAdd(output[1], targets)
       else
