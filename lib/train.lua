@@ -36,9 +36,21 @@ local function sgd(model, criterion, config, train_x, train_y)
       end
       gradParameters:zero()
       local output = model:forward(inputs)
-      local f = criterion:forward(output, targets)
-      local df_do = criterion:backward(output, targets)
-      confusion:batchAdd(output, targets)      
+      local f = {}
+      local df_do = {}
+      
+      if type(output) == 'table' then
+        for j = 1, #criterion do
+          f[j] = criterion[j]:forward(output[j], targets)
+          df_do[j] = criterion[j]:backward(output[j], targets)
+        end
+        confusion:batchAdd(output[1], targets)
+      else
+        f = criterion:forward(output, targets)
+        df_do = criterion:backward(output, targets)
+        confusion:batchAdd(output, targets)
+      end
+      
       model:backward(inputs, df_do)
       return f, gradParameters
     end
@@ -79,6 +91,9 @@ local function test_augmented(model, test_x, test_y, batch_size)
       targets[i]:copy(test_y[t + i - 1])
     end
     local output = model:forward(inputs)
+    if type(output) == 'table' then
+      output = output[1]
+    end
     for i = 1, batch_size do
       local preds = output:narrow(1, 
                     1 + TEST_JITTER_SZ*(i-1), 
@@ -117,6 +132,9 @@ local function test(model, test_x, test_y, batch_size)
     end
 
     local output = model:forward(inputs)
+    if type(output) == 'table' then
+      output = output[1]
+    end
     confusion:batchAdd(output:narrow(1, 1, batch_size), 
                        targets:narrow(1, 1, batch_size))
   end
@@ -199,6 +217,9 @@ local function predict_augmented(model, test_x, batch_size)
                     TEST_JITTER_SZ):copy(jittered_x)
     end
     local output = model:forward(inputs)
+    if type(output) == 'table' then
+      output = output[1]
+    end
     for i = 1, batch_size do
       local out = output:narrow(1, 
                                 1 + TEST_JITTER_SZ*(i-1), 
@@ -229,6 +250,9 @@ function predict(model, test_x, batch_size)
     end 
     inputs:narrow(1, 1, batch_size):copy(test_x:narrow(1, t, batch_size))
     local output = model:forward(inputs)
+    if type(output) == 'table' then
+      output = output[1]
+    end
     preds:narrow(1, t, batch_size):copy(output:narrow(1, 1, batch_size))
   end
   if opt.progress then

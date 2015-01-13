@@ -38,11 +38,11 @@ local seeds = {2, 3}
 local epochs = {50, 50}
 local val_sz = 6144
 local model, criterion = create_model(config.model_seed)
--- epochs = validate(model, criterion, learning_rates, seeds, epochs, val_sz)
+epochs = validate(model, criterion, learning_rates, seeds, epochs, val_sz)
 
 config.id = string.gsub(config.id, '_val$', '')
 model, criterion = create_model(config.model_seed)
--- model = train(model, criterion, learning_rates, seeds, epochs)
+model = train(model, criterion, learning_rates, seeds, epochs)
 
 config.id = string.gsub(config.id, '_val$', '')
 local model = torch.load(string.format('model/%s.model', config.id))
